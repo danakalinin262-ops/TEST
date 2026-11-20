@@ -2,102 +2,63 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Stars Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stars Test</title>
   <script src="https://telegram.org"></script>
   <style>
-    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      height: 100vh;
       margin: 0;
-      padding: 20px;
-      text-align: center;
-      background-color: var(--tg-theme-bg-color, #ffffff);
-      color: var(--tg-theme-text-color, #000000);
-    }
-    .card {
-      background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-      padding: 24px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 340px;
-    }
-    .star-icon { font-size: 48px; margin-bottom: 12px; }
-    h2 { margin: 0 0 8px 0; font-size: 20px; }
-    p {
-      margin: 0 0 24px 0;
-      font-size: 14px;
-      color: var(--tg-theme-hint-color, #707579);
-      line-height: 1.4;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, #000);
     }
     button {
-      width: 100%;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: 600;
+      padding: 18px 32px;
+      font-size: 18px;
+      font-weight: bold;
       border: none;
       border-radius: 12px;
-      background-color: var(--tg-theme-button-color, #2481cc);
-      color: var(--tg-theme-button-text-color, #ffffff);
+      background: #2481cc;
+      color: #fff;
       cursor: pointer;
-    }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #status {
-      margin-top: 16px;
-      font-size: 13px;
-      color: var(--tg-theme-hint-color, #707579);
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <div class="star-icon">⭐️</div>
-    <h2>Оплата заказа</h2>
-    <p id="desc">Нажмите кнопку ниже для оплаты 1 Звездой.</p>
-    <button id="payBtn" onclick="openPay()">Оплатить 1 ⭐️</button>
-    <div id="status"></div>
-  </div>
+  <button id="btn">Оплатить 1 ⭐️</button>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
-    tg.expand();
 
-    // Достаём готовую ссылку на счёт из параметров URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const invoiceLink = urlParams.get('invoice');
+    document.getElementById('btn').addEventListener('click', function() {
+      const params = new URLSearchParams(window.location.search);
+      const invoice = params.get('invoice');
 
-    const payBtn = document.getElementById('payBtn');
-    const statusText = document.getElementById('status');
+      // 1. Проверка: открыто ли в Telegram
+      if (tg.platform === 'unknown') {
+        alert('Ошибка: вы открыли сайт в обычном браузере! Откройте его внутри Telegram.');
+        return;
+      }
 
-    if (!invoiceLink) {
-      payBtn.disabled = true;
-      statusText.innerText = '⚠️ Счёт не найден. Откройте приложение через кнопку в боте.';
-    }
+      // 2. Проверка: передан ли счёт
+      if (!invoice) {
+        alert('Ошибка: счёт не передан в URL. Нажмите кнопку именно в сообщении бота!');
+        return;
+      }
 
-    function openPay() {
-      if (!invoiceLink) return;
-
-      tg.openInvoice(invoiceLink, function(status) {
-        if (status === 'paid') {
-          statusText.innerText = '✅ Оплата прошла успешно!';
-          payBtn.disabled = true;
-          payBtn.innerText = 'Оплачено';
-          tg.HapticFeedback.notificationOccurred('success');
-        } else if (status === 'cancelled') {
-          statusText.innerText = 'Оплата отменена.';
-        } else if (status === 'failed') {
-          statusText.innerText = '❌ Ошибка при оплате.';
-          tg.HapticFeedback.notificationOccurred('error');
-        }
+      // 3. Запуск оплаты
+      tg.openInvoice(invoice, function(status) {
+        alert('Результат оплаты: ' + status);
       });
-    }
+    });
   </script>
 </body>
 </html>
+
